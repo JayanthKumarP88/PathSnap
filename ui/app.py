@@ -144,7 +144,7 @@ if evaluate_clicked:
                 "use_hmm": use_hmm,
                 "search_radius": float(search_radius)
             }
-            resp = requests.post(f"{api_host}/evaluate", json=payload, timeout=30)
+            resp = requests.post(f"{api_host}/evaluate", json=payload, timeout=90)
             if resp.status_code == 200:
                 data = resp.json()
 
@@ -169,7 +169,7 @@ if evaluate_clicked:
                 st.markdown("---")
                 st.subheader(f"🗺️ Reconstructed Route Visualization (Trip {selected_trip})")
                 map_url = f"{api_host}/map/{selected_trip}?partition={selected_partition}&use_hmm={str(use_hmm).lower()}"
-                map_resp = requests.get(map_url, timeout=30)
+                map_resp = requests.get(map_url, timeout=90)
                 if map_resp.status_code == 200:
                     components.html(map_resp.text, height=580, scrolling=False)
                 else:
