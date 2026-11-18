@@ -15,8 +15,10 @@ class RouteMapVisualizer:
     - Auto-bounding box fitting to trajectory extent
     - Layer controls and informative custom legend
     """
-    def __init__(self, tiles: str = "CartoDB positron"):
+    def __init__(self, tiles: str = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+                 attr: str = "Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ"):
         self.tiles = tiles
+        self.attr = attr
 
     def build_map(self, track_lonlat: np.ndarray,
                   nodes_lonlat: np.ndarray,
@@ -29,7 +31,7 @@ class RouteMapVisualizer:
         center_lat = float(np.mean(track_lonlat[:, 1]))
         center_lon = float(np.mean(track_lonlat[:, 0]))
 
-        fmap = folium.Map(location=[center_lat, center_lon], zoom_start=14, tiles=self.tiles)
+        fmap = folium.Map(location=[center_lat, center_lon], zoom_start=14, tiles=self.tiles, attr=self.attr)
 
         # Feature Groups for Layer Control
         fg_network = folium.FeatureGroup(name="🛣️ Road Network Arcs", show=True)

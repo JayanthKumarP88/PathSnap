@@ -19,8 +19,12 @@ class EvaluateResponse(BaseModel):
     reconstructed_arcs: List[int]
     raw_classifier_arcs: List[int]
     server_timestamp: str
+    predicted_coords: Optional[List[List[float]]] = None
+    reference_coords: Optional[List[List[float]]] = None
+    track_coords: Optional[List[List[float]]] = None
 
 class TripListResponse(BaseModel):
     available_trips: List[str]
     count: int
     active_model: str
+    metadata: Optional[Dict[str, Any]] = None

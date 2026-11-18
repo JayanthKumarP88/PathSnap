@@ -7,7 +7,7 @@ import numpy as np
 from typing import List, Optional, Dict, Any
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(current_dir, ".."))
@@ -74,13 +74,36 @@ def startup_event():
     print("Ready to process evaluator inference requests on /evaluate")
     print("=" * 65)
 
-@app.get("/", tags=["Health"])
+@app.get("/", tags=["Web UI"])
+def get_index_or_health(request: Request):
+    index_file = os.path.join(project_root, "web", "index.html")
+    if os.path.exists(index_file):
+        return FileResponse(index_file)
+    return {
+        "status": "online",
+        "system": "PathSnap Distributed Map-Matching Engine",
+        "active_model": model_name
+    }
+
+@app.get("/health", tags=["Health"])
 def health_check():
     return {
         "status": "online",
         "system": "PathSnap Distributed Map-Matching Engine",
         "active_model": model_name,
-        "endpoints": ["/trips", "/evaluate", "/map/{trip_id}"]
+        "endpoints": ["/trips", "/evaluate", "/map/{trip_id}", "/health"]
+    }
+
+@app.get("/trip/{partition}/{trip_id}/track", tags=["Trips"])
+def get_trip_track(partition: str, trip_id: str):
+    data = data_loader.load_trip(trip_id, partition)
+    track = data["track"]
+    track_coords = [[float(p[1]), float(p[0])] for p in track]
+    return {
+        "trip_id": trip_id,
+        "partition": partition,
+        "points_count": len(track),
+        "track_coords": track_coords
     }
 
 @app.get("/trips", response_model=TripListResponse, tags=["Trips"])
@@ -127,6 +150,35 @@ def evaluate_trip_endpoint(req: EvaluateRequest, request: Request):
         print(f"  Candidate Miss Rate:        {result['candidate_miss_rate'] * 100:.2f}%")
         print("-" * 60 + "\n")
 
+        nodes_arr = np.array(result["nodes_lonlat"])
+        arcs_arr = np.array(result["arcs"])
+
+        # Extract predicted path coordinates (deduplicated consecutive arcs)
+        pred_coords = []
+        traversed_arcs = []
+        for a_id in result["reconstructed_arcs"]:
+            if not traversed_arcs or traversed_arcs[-1] != a_id:
+                traversed_arcs.append(a_id)
+
+        for a_id in traversed_arcs:
+            u, v = int(arcs_arr[a_id, 0]), int(arcs_arr[a_id, 1])
+            u_lat, u_lon = float(nodes_arr[u, 1]), float(nodes_arr[u, 0])
+            v_lat, v_lon = float(nodes_arr[v, 1]), float(nodes_arr[v, 0])
+            pred_coords.append([u_lat, u_lon])
+            pred_coords.append([v_lat, v_lon])
+
+        # Extract reference path coordinates if available
+        ref_coords = []
+        if result["reference_arcs"]:
+            for a_id in result["reference_arcs"]:
+                u, v = int(arcs_arr[a_id, 0]), int(arcs_arr[a_id, 1])
+                u_lat, u_lon = float(nodes_arr[u, 1]), float(nodes_arr[u, 0])
+                v_lat, v_lon = float(nodes_arr[v, 1]), float(nodes_arr[v, 0])
+                ref_coords.append([u_lat, u_lon])
+                ref_coords.append([v_lat, v_lon])
+
+        track_coords = [[float(p[1]), float(p[0])] for p in result["track_lonlat"]]
+
         return {
             "trip_id": result["trip_id"],
             "observations_count": result["observations_count"],
@@ -138,7 +190,10 @@ def evaluate_trip_endpoint(req: EvaluateRequest, request: Request):
             "reconstructed_arcs_count": len(result["reconstructed_arcs"]),
             "reconstructed_arcs": result["reconstructed_arcs"],
             "raw_classifier_arcs": result["raw_classifier_arcs"],
-            "server_timestamp": req_time
+            "server_timestamp": req_time,
+            "predicted_coords": pred_coords,
+            "reference_coords": ref_coords,
+            "track_coords": track_coords
         }
     except Exception as e:
         print(f"[ERROR] Inference failed for trip {req.trip_id}: {str(e)}")
