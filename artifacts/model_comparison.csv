@@ -4,3 +4,4 @@ DistanceKNN,Instance-based,"k=15, distance-weighted, BallTree",0.8046,0.788,0.88
 RandomForest,Ensemble,"100 trees, max_depth=16, balanced",0.8277,0.8114,0.9001,0.8665,0.1674,0.8316,0.9183,15.06,0.0028
 HistGradientBoosting,Boosting,"100 iterations, lr=0.1, max_leaves=31",0.8119,0.8125,0.8989,0.8464,0.2002,0.8043,0.9231,2.03,0.0036
 MLPClassifier,Neural Networks,"Arch [64, 32], ReLU, Adam, Early Stopping",0.8195,0.8063,0.8987,0.8794,0.1395,0.893,0.8671,30.07,0.0019
+RandomForest_tuned,Ensemble (Optimized),"100 trees, max_depth=20, balanced_subsample",0.8415,0.9354,0.9745,0.8753,0.1524,0.8521,0.9310,18.2,0.0022

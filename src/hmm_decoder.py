@@ -67,6 +67,18 @@ class HMMRouteDecoder:
         if T == 0:
             return np.empty(0, dtype=np.int64), np.empty(0, dtype=np.int64)
 
+        # Batch predict all candidate features in a single vectorized call
+        lengths = [len(f) for f in observation_features]
+        cum_indices = np.cumsum([0] + lengths)
+        total_feats = sum(lengths)
+
+        if total_feats > 0:
+            all_feats = np.vstack([f for f in observation_features if len(f) > 0])
+            all_probs = classifier.predict_proba(all_feats)[:, 1]
+            all_probs = np.clip(all_probs, 1e-6, 1.0 - 1e-6)
+        else:
+            all_probs = np.empty(0, dtype=np.float64)
+
         # Precompute classifier emission probabilities
         emissions_log = []
         classifier_arcs = np.zeros(T, dtype=np.int64)
@@ -75,9 +87,14 @@ class HMMRouteDecoder:
             cands = observation_candidates[t]
             feats = observation_features[t]
 
-            # Classifier confidence (P(y=1))
-            probs = classifier.predict_proba(feats)[:, 1]
-            probs = np.clip(probs, 1e-6, 1.0 - 1e-6)
+            if len(cands) == 0:
+                emissions_log.append(np.array([-10.0]))
+                classifier_arcs[t] = -1
+                continue
+
+            start_i = cum_indices[t]
+            end_i = cum_indices[t + 1]
+            probs = all_probs[start_i:end_i]
 
             # Pointwise top-1 candidate
             best_idx = np.argmax(probs)

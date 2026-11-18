@@ -38,23 +38,28 @@ app.add_middleware(
 data_loader = TripDataLoader()
 evaluator = TripEvaluator(data_loader)
 active_model = None
-model_name = "HistGradientBoosting"
+model_name = "RandomForest_tuned"
 
 def load_default_model():
     global active_model, model_name
     models_dir = os.path.join(project_root, "artifacts", "saved_models")
     # Prefer tuned model, fallback to HistGradientBoosting or RandomForest
     candidate_files = [
+        "RandomForest_tuned.pkl",
+        "RandomForest.pkl",
         "HistGradientBoosting_tuned.pkl",
         "HistGradientBoosting.pkl",
-        "RandomForest.pkl",
         "LogisticRegression.pkl"
     ]
     for mf in candidate_files:
         p = os.path.join(models_dir, mf)
         if os.path.exists(p):
-            with open(p, "rb") as f:
-                active_model = pickle.load(f)
+            try:
+                import joblib
+                active_model = joblib.load(p)
+            except Exception:
+                with open(p, "rb") as f:
+                    active_model = pickle.load(f)
             model_name = mf.replace(".pkl", "")
             print(f"[API SERVER] Successfully loaded active model: {model_name} from {p}")
             return
