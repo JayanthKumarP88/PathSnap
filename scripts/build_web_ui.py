@@ -687,7 +687,11 @@ def build_html():
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // ---------------- Application State & Config ----------------
-        let API_BASE = window.location.origin.includes(":8000") ? window.location.origin : "http://10.30.204.40:8000";
+        let API_BASE = window.location.origin.includes(":8000") 
+            ? window.location.origin 
+            : (window.location.hostname && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1" 
+                ? "http://" + window.location.hostname + ":8000" 
+                : "http://localhost:8000");
         let currentPartition = "student_test";
         let selectedTripId = null;
         let map = null;
@@ -815,29 +819,28 @@ def build_html():
         }}
 
         async function checkApiHealth() {{
-            try {{
-                const res = await fetch(`${{API_BASE}}/health`, {{ signal: AbortSignal.timeout(2500) }});
-                if (res.ok) {{
-                    document.querySelector('.api-dot').style.backgroundColor = "#22C55E";
-                    document.querySelector('.api-dot').style.boxShadow = "0 0 6px #22C55E";
-                }} else {{
-                    throw new Error();
-                }}
-            }} catch (e) {{
-                // Try localhost fallback
+            const candidates = [
+                API_BASE,
+                "http://localhost:8000",
+                window.location.hostname ? ("http://" + window.location.hostname + ":8000") : null,
+                "http://10.30.203.19:8000",
+                "http://10.30.204.40:8000"
+            ].filter(Boolean);
+
+            for (const cand of candidates) {{
                 try {{
-                    const res2 = await fetch(`http://localhost:8000/health`, {{ signal: AbortSignal.timeout(1500) }});
-                    if (res2.ok) {{
-                        API_BASE = "http://localhost:8000";
-                        document.getElementById('api-addr-display').innerText = "localhost:8000";
+                    const res = await fetch(`${{cand}}/health`, {{ signal: AbortSignal.timeout(1500) }});
+                    if (res.ok) {{
+                        API_BASE = cand;
+                        document.getElementById('api-addr-display').innerText = API_BASE.replace("http://", "");
                         document.querySelector('.api-dot').style.backgroundColor = "#22C55E";
                         document.querySelector('.api-dot').style.boxShadow = "0 0 6px #22C55E";
                         return;
                     }}
-                }} catch (e2) {{}}
-                document.querySelector('.api-dot').style.backgroundColor = "#EF4444";
-                document.querySelector('.api-dot').style.boxShadow = "0 0 6px #EF4444";
+                }} catch (e) {{}}
             }}
+            document.querySelector('.api-dot').style.backgroundColor = "#EF4444";
+            document.querySelector('.api-dot').style.boxShadow = "0 0 6px #EF4444";
         }}
 
         function renderTrips() {{

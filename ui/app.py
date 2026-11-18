@@ -42,16 +42,10 @@ st.markdown("""
 current_dir = os.path.dirname(os.path.abspath(__file__))
 index_path = os.path.join(current_dir, "..", "web", "index.html")
 
-target_api = os.environ.get("LAPTOP1_API_URL", "http://10.30.204.40:8000")
+target_api = os.environ.get("LAPTOP1_API_URL", "http://localhost:8000")
 
 with open(index_path, "r", encoding="utf-8") as f:
     html_content = f.read()
-
-# Replace default API target with environment target
-html_content = html_content.replace(
-    'let API_BASE = window.location.origin.includes(":8000") ? window.location.origin : "http://10.30.204.40:8000";',
-    f'let API_BASE = "{target_api}";'
-)
 
 # Render native HTML/CSS/JS Leaflet dashboard full screen
 components.html(html_content, height=1000, scrolling=False)

@@ -1,5 +1,5 @@
 @echo off
-title PathSnap - Laptop 1 (Model & Inference API Server)
+title PathSnap - Laptop 1 (Model and Inference API Server)
 cls
 echo ======================================================================
 echo           PATHSNAP FASTAPI INFERENCE SERVER (LAPTOP 1)
@@ -11,7 +11,11 @@ if %errorlevel% neq 0 (
     pip install fastapi uvicorn scikit-learn pydantic folium branca
 )
 
-set LAPTOP1_IP=10.30.204.40
+set LAPTOP1_IP=10.30.203.19
+for /f "tokens=*" %%a in ('powershell -command "(Get-NetIPAddress -AddressFamily IPv4 -InterfaceAlias '*Wi-Fi*').IPAddress" 2^>nul') do (
+    if not "%%a"=="" set LAPTOP1_IP=%%a
+)
+
 echo.
 echo [SERVER READY]
 echo   Laptop 1 Wi-Fi IP : %LAPTOP1_IP%
@@ -21,7 +25,8 @@ echo.
 echo ----------------------------------------------------------------------
 echo INSTRUCTIONS FOR TEAMMATES (LAPTOP 2):
 echo 1. Ensure Laptop 2 is connected to the same Wi-Fi / Hotspot.
-echo 2. Run 'run_ui.bat' on Laptop 2 - it will auto-connect directly!
+echo 2. Tell teammate to connect to: http://%LAPTOP1_IP%:8000
+echo 3. Run 'run_ui.bat' on Laptop 2 - it will auto-connect directly!
 echo ----------------------------------------------------------------------
 echo.
 
