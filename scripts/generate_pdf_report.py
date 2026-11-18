@@ -24,14 +24,14 @@ def build_pdf_report():
 
     styles = getSampleStyleSheet()
 
-    # Custom typography styles
+    # Clean, elegant Black & White typography styles
     title_style = ParagraphStyle(
         "DocTitle",
         parent=styles["Normal"],
         fontName="Helvetica-Bold",
         fontSize=18,
         leading=22,
-        textColor=colors.HexColor("#0D47A1"),
+        textColor=colors.black,
         alignment=1, # Center
         spaceAfter=3
     )
@@ -42,7 +42,7 @@ def build_pdf_report():
         fontName="Helvetica",
         fontSize=9.5,
         leading=13,
-        textColor=colors.HexColor("#37474F"),
+        textColor=colors.HexColor("#333333"),
         alignment=1,
         spaceAfter=10
     )
@@ -53,7 +53,7 @@ def build_pdf_report():
         fontName="Helvetica-Bold",
         fontSize=11.5,
         leading=15,
-        textColor=colors.HexColor("#1565C0"),
+        textColor=colors.black,
         spaceBefore=8,
         spaceAfter=3,
         keepWithNext=True
@@ -65,7 +65,7 @@ def build_pdf_report():
         fontName="Helvetica-Bold",
         fontSize=9,
         leading=12,
-        textColor=colors.HexColor("#263238"),
+        textColor=colors.black,
         spaceBefore=5,
         spaceAfter=2,
         keepWithNext=True
@@ -77,7 +77,7 @@ def build_pdf_report():
         fontName="Helvetica",
         fontSize=8,
         leading=11,
-        textColor=colors.HexColor("#212121"),
+        textColor=colors.black,
         spaceAfter=4
     )
 
@@ -86,7 +86,7 @@ def build_pdf_report():
         parent=body_style,
         fontSize=7,
         leading=9,
-        textColor=colors.HexColor("#546E7A"),
+        textColor=colors.HexColor("#444444"),
         alignment=1,
         spaceAfter=5
     )
@@ -126,7 +126,7 @@ def build_pdf_report():
     # ---------------- Title Banner ----------------
     story.append(Paragraph("PATHSNAP: DISTRIBUTED MAP-MATCHING & ROUTE RECONSTRUCTION", title_style))
     story.append(Paragraph("PES University | Department of CSE | UE24CS352A ML Hackathon<br/><b>Team:</b> Jayanth Kumar, Pranay Krishna, Kundan V, Janhavi Ramakrishnan | <b>Repo:</b> https://github.com/JayanthKumarP88/PathSnap", subtitle_style))
-    story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor("#0D47A1"), spaceAfter=8))
+    story.append(HRFlowable(width="100%", thickness=1.0, color=colors.black, spaceAfter=8))
 
     # ---------------- SECTION 1: OVERVIEW ----------------
     story.append(Paragraph("1. Overview", h1_style))
@@ -176,11 +176,11 @@ def build_pdf_report():
     ]
     t_comp = Table(comp_rows, colWidths=[74, 70, 88, 43, 44, 44, 46, 42, 42, 45])
     t_comp.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#0D47A1")),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#CFD8DC")),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#1A1A1A")),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#888888")),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor("#F5F5F5")]),
-        ('BACKGROUND', (0, 3), (-1, 3), colors.HexColor("#E3F2FD"))
+        ('BACKGROUND', (0, 3), (-1, 3), colors.HexColor("#E5E5E5"))
     ]))
     story.append(t_comp)
     story.append(Spacer(1, 4))
@@ -222,7 +222,7 @@ def build_pdf_report():
         body_style
     ))
 
-    # Per-Trip Results Table
+    # Per-Trip Results Table in Clean Monochrome
     trip_headers = [Paragraph(f"<b>{col}</b>", table_header_style) for col in [
         "Partition", "Trip ID", "Fixes", "Top-1 Acc", "Continuity", "Partition", "Trip ID", "Fixes", "Top-1 Acc", "Continuity"
     ]]
@@ -241,10 +241,10 @@ def build_pdf_report():
     ]
     t_trips = Table(trip_rows, colWidths=[62, 44, 38, 48, 48, 62, 44, 38, 48, 48])
     t_trips.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#0D47A1")),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#CFD8DC")),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#1A1A1A")),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#888888")),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor("#F9F9F9")])
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor("#F8F8F8")])
     ]))
     story.append(t_trips)
     story.append(Spacer(1, 4))
@@ -256,7 +256,7 @@ def build_pdf_report():
 
     fig_eval_trips = os.path.join(project_root, "reports", "figures", "evaluator_trips_accuracy.png")
     if os.path.exists(fig_eval_trips):
-        story.append(Image(fig_eval_trips, width=520, height=130))
+        story.append(Image(fig_eval_trips, width=520, height=125))
         story.append(Paragraph("<i>Figure 3: Top-1 Observation Accuracy across test trajectories (Tuned Random Forest + HMM Viterbi).</i>", caption_style))
 
     story.append(PageBreak())
@@ -302,7 +302,7 @@ def build_pdf_report():
     ))
 
     doc.build(story)
-    print(f"Consolidated Technical Report PDF successfully generated at: {pdf_path}")
+    print(f"Clean Black & White Technical Report PDF successfully generated at: {pdf_path}")
 
 if __name__ == "__main__":
     build_pdf_report()

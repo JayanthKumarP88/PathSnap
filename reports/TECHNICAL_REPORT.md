@@ -212,16 +212,16 @@ A classifier evaluated in isolation evaluates each GPS ping independently, leadi
 
 | Partition | Trip ID | Fixes Count | Top-1 Accuracy | Route Continuity | Status |
 | :--- | :---: | :---: | :---: | :---: | :--- |
-| **evaluator_test** | `00000087` | 1,399 | **99.57%** 🌟 | **99.07%** | Target Met |
-| **evaluator_test** | `00000049` | 2,642 | **98.18%** 🌟 | **99.24%** | Target Met |
-| **student_test** | `00000052` | 262 | **96.95%** 🌟 | **96.17%** | Target Met |
-| **evaluator_test** | `00000073` | 1,144 | **95.10%** 🌟 | **98.05%** | Target Met |
+| **evaluator_test** | `00000087` | 1,399 | **99.57%** | **99.07%** | Target Met |
+| **evaluator_test** | `00000049` | 2,642 | **98.18%** | **99.24%** | Target Met |
+| **student_test** | `00000052` | 262 | **96.95%** | **96.17%** | Target Met |
+| **evaluator_test** | `00000073` | 1,144 | **95.10%** | **98.05%** | Target Met |
 | **evaluator_test** | `00000023` | 458 | 94.76% | 96.22% | Verified |
 | **student_test** | `00000000` | 2,503 | 94.25% | 97.80% | Verified |
 | **evaluator_test** | `00000059` | 1,031 | 93.40% | 93.30% | Verified |
 | **student_test** | `00000056` | 3,958 | 93.56% | 98.42% | Verified |
 | **student_test** | `00000040` | 2,995 | 91.55% | 95.80% | Verified |
-| **student_test** | `00000007` | 1,354 | 88.26% | **100.00%** 🛣️ | Perfect Continuity |
+| **student_test** | `00000007` | 1,354 | 88.26% | **100.00%** | Perfect Continuity |
 | **evaluator_test** | `00000017` | 1,346 | 87.74% | 94.60% | Verified |
 | **student_test** | `00000009` | 1,049 | 87.70% | 96.10% | Verified |
 | **evaluator_test** | `00000067` | 916 | 86.90% | 97.40% | Verified |
@@ -231,7 +231,7 @@ A classifier evaluated in isolation evaluates each GPS ping independently, leadi
 | **student_test** | `00000065` | 768 | 85.29% | 97.20% | Verified |
 | **evaluator_test** | `00000030` | 654 | 79.20% | 92.50% | Verified |
 | **student_test** | `00000077` | 3,911 | 71.80% | 98.21% | High GPS Noise |
-| **evaluator_test** | `00000015` | 6,854 | *(Reference Pending)* | **99.49%** 🛣️ | Complete Route |
+| **evaluator_test** | `00000015` | 6,854 | *(Reference Pending)* | **99.49%** | Complete Route |
 
 ### 5.3 Honest Analysis of Accuracy and Continuity
 - **Partition Averages:**
