@@ -12,9 +12,12 @@ class TripDataLoader:
         if data_root is None:
             # Look for standard hackathon directory layout
             candidate_roots = [
+                os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data")),
                 os.path.join("..", "ML_hackathon_files", "Student folder", "Student folder"),
                 os.path.join("ML_hackathon_files", "Student folder", "Student folder"),
-                os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "ML_hackathon_files", "Student folder", "Student folder"))
+                os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "ML_hackathon_files", "Student folder", "Student folder")),
+                os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "evaluator_test", "evaluator_test")),
+                os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "evaluator_test"))
             ]
             for cr in candidate_roots:
                 if os.path.exists(cr):
@@ -27,19 +30,21 @@ class TripDataLoader:
 
     def get_trip_path(self, trip_id: str, partition: str = "train") -> str:
         trip_str = str(trip_id).zfill(8)
-        # Check in specified partition first
-        cand_path = os.path.join(self.data_root, partition, trip_str)
-        if os.path.exists(cand_path):
-            return cand_path
-        # Check in alternative partitions
-        for alt_part in ["train", "student_test"]:
-            alt_path = os.path.join(self.data_root, alt_part, trip_str)
-            if os.path.exists(alt_path):
-                return alt_path
-        # Direct folder check
-        if os.path.exists(trip_str):
-            return os.path.abspath(trip_str)
-        raise FileNotFoundError(f"Trip directory not found for ID '{trip_id}' in {self.data_root}")
+        search_dirs = [
+            os.path.join(self.data_root, partition, trip_str),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", partition, trip_str)),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "evaluator_test", "evaluator_test", trip_str)),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "evaluator_test", trip_str)),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "ML_hackathon_files", "Student folder", "Student folder", partition, trip_str)),
+            os.path.join(self.data_root, "evaluator_test", trip_str),
+            os.path.join(self.data_root, "student_test", trip_str),
+            os.path.join(self.data_root, "train", trip_str),
+            os.path.abspath(trip_str)
+        ]
+        for p in search_dirs:
+            if os.path.exists(p) and os.path.isdir(p):
+                return p
+        raise FileNotFoundError(f"Trip directory not found for ID '{trip_id}' across candidate directories.")
 
     def load_trip(self, trip_id: str, partition: str = "train") -> Dict[str, np.ndarray]:
         trip_dir = self.get_trip_path(trip_id, partition)
@@ -76,7 +81,16 @@ class TripDataLoader:
         }
 
     def list_trips(self, partition: str = "train") -> list:
-        part_dir = os.path.join(self.data_root, partition)
-        if not os.path.exists(part_dir):
-            return []
-        return sorted([d for d in os.listdir(part_dir) if os.path.isdir(os.path.join(part_dir, d))])
+        search_roots = [
+            os.path.join(self.data_root, partition),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", partition)),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "evaluator_test", "evaluator_test")) if partition == "evaluator_test" else None,
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "evaluator_test")) if partition == "evaluator_test" else None,
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "ML_hackathon_files", "Student folder", "Student folder", partition))
+        ]
+        for sr in search_roots:
+            if sr and os.path.exists(sr):
+                trips = sorted([d for d in os.listdir(sr) if os.path.isdir(os.path.join(sr, d)) and d.isdigit()])
+                if trips:
+                    return trips
+        return []

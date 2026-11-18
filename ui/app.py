@@ -50,37 +50,47 @@ st.markdown("""
 st.sidebar.image("https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Target_Corporation_logo_%28vector%29.svg/200px-Target_Corporation_logo_%28vector%29.svg.png", width=60)
 st.sidebar.title("⚙️ System Config")
 
-# Auto-probe active Laptop 1 API IP (eliminates manual typing)
+# Direct Laptop 1 URL resolution
+default_target = os.environ.get("LAPTOP1_API_URL", "http://10.30.204.40:8000")
+
+# Candidate endpoints
 candidate_urls = [
-    os.environ.get("LAPTOP1_API_URL"),
+    default_target,
     "http://10.30.204.40:8000",
-    "http://10.2.0.2:8000",
-    "http://localhost:8000"
+    "http://localhost:8000",
+    "http://10.2.0.2:8000"
 ]
-default_api_url = "http://10.30.204.40:8000"
+active_url = None
 for cand in candidate_urls:
     if cand:
         try:
-            r = requests.get(f"{cand}/", timeout=0.8)
+            r = requests.get(f"{cand}/", timeout=1.2)
             if r.status_code == 200:
-                default_api_url = cand
+                active_url = cand
                 break
         except Exception:
             pass
 
-# Laptop 1 Connection settings with auto-connected URL
-api_host = st.sidebar.text_input("Laptop 1 API Base URL", value=default_api_url, help="IP address of Laptop 1")
+resolved_url = active_url if active_url else default_target
 
-# Test Connection
+# Connection settings text input
+api_host = st.sidebar.text_input("Laptop 1 API Base URL", value=resolved_url, key="api_host_url", help="IP address of Laptop 1 API Server")
+
+# Reconnect helper button
+if st.sidebar.button("🔄 Auto-Connect to Laptop 1 (10.30.204.40)"):
+    st.session_state["api_host_url"] = "http://10.30.204.40:8000"
+    st.rerun()
+
+# Test Connection and show status
 try:
-    health_resp = requests.get(f"{api_host}/", timeout=2)
+    health_resp = requests.get(f"{api_host}/", timeout=2.5)
     if health_resp.status_code == 200:
         health_info = health_resp.json()
-        st.sidebar.success(f"🟢 Connected to Laptop 1\nActive Model: {health_info.get('active_model', 'N/A')}")
+        st.sidebar.success(f"🟢 Connected to Laptop 1\n\nActive Model: {health_info.get('active_model', 'N/A')}\n\nHost: {api_host}")
     else:
-        st.sidebar.error("🔴 Connected, but server reported an error.")
+        st.sidebar.error(f"🔴 Connected, but server reported status {health_resp.status_code}")
 except Exception:
-    st.sidebar.warning("⚠️ Laptop 1 API not reachable. Ensure run_api.bat is running on Laptop 1.")
+    st.sidebar.error(f"⚠️ Cannot connect to Laptop 1 at {api_host}.\n\nTroubleshooting:\n1. Ensure run_api.bat is running on Laptop 1.\n2. Ensure both laptops are on the same Wi-Fi / Hotspot.\n3. Verify Laptop 1 IP is 10.30.204.40.")
 
 # Fetch available evaluation trips
 partition_choice = st.sidebar.radio(
