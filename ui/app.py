@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import requests
 import json
@@ -49,8 +50,26 @@ st.markdown("""
 st.sidebar.image("https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Target_Corporation_logo_%28vector%29.svg/200px-Target_Corporation_logo_%28vector%29.svg.png", width=60)
 st.sidebar.title("⚙️ System Config")
 
-# Laptop 1 Connection settings
-api_host = st.sidebar.text_input("Laptop 1 API Base URL", value="http://localhost:8000", help="IP address or hostname of Laptop 1 (e.g. http://192.168.1.100:8000)")
+# Auto-probe active Laptop 1 API IP (eliminates manual typing)
+candidate_urls = [
+    os.environ.get("LAPTOP1_API_URL"),
+    "http://10.30.204.40:8000",
+    "http://10.2.0.2:8000",
+    "http://localhost:8000"
+]
+default_api_url = "http://10.30.204.40:8000"
+for cand in candidate_urls:
+    if cand:
+        try:
+            r = requests.get(f"{cand}/", timeout=0.8)
+            if r.status_code == 200:
+                default_api_url = cand
+                break
+        except Exception:
+            pass
+
+# Laptop 1 Connection settings with auto-connected URL
+api_host = st.sidebar.text_input("Laptop 1 API Base URL", value=default_api_url, help="IP address of Laptop 1")
 
 # Test Connection
 try:
