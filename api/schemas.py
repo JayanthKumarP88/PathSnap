@@ -2,7 +2,8 @@ from pydantic import BaseModel, Field
 from typing import List, Optional, Any, Dict
 
 class EvaluateRequest(BaseModel):
-    trip_id: str = Field(..., description="ID of the evaluation trip to process (e.g. '00000000')")
+    trip_id: str = Field(..., description="ID of the evaluation trip to process (e.g. '00000015')")
+    partition: str = Field("evaluator_test", description="Dataset partition ('evaluator_test' or 'student_test')")
     use_hmm: bool = Field(True, description="Whether to apply HMM Viterbi route reconstruction")
     search_radius: float = Field(35.0, description="Candidate search radius in meters")
 

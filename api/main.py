@@ -79,8 +79,10 @@ def health_check():
     }
 
 @app.get("/trips", response_model=TripListResponse, tags=["Trips"])
-def list_available_trips(partition: str = "student_test"):
+def list_available_trips(partition: str = "evaluator_test"):
     trips = data_loader.list_trips(partition)
+    if not trips and partition == "evaluator_test":
+        trips = data_loader.list_trips("student_test")
     return {
         "available_trips": trips,
         "count": len(trips),
@@ -94,7 +96,7 @@ def evaluate_trip_endpoint(req: EvaluateRequest, request: Request):
     req_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     print("\n" + "-" * 60)
-    print(f"[INFERENCE REQUEST] Received request for Trip ID: {req.trip_id}")
+    print(f"[INFERENCE REQUEST] Received request for Trip ID: {req.trip_id} (Partition: {req.partition})")
     print(f"  Client IP: {client_ip} | Timestamp: {req_time}")
     print(f"  Use HMM Decoding: {req.use_hmm} | Search Radius: {req.search_radius}m")
 
@@ -108,7 +110,7 @@ def evaluate_trip_endpoint(req: EvaluateRequest, request: Request):
         result = evaluator.evaluate_trip(
             trip_id=req.trip_id,
             model=active_model,
-            partition="student_test",
+            partition=req.partition,
             use_hmm=req.use_hmm,
             search_radius=req.search_radius
         )
@@ -138,14 +140,14 @@ def evaluate_trip_endpoint(req: EvaluateRequest, request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/map/{trip_id}", response_class=HTMLResponse, tags=["Visualization"])
-def get_trip_map_endpoint(trip_id: str, use_hmm: bool = True):
+def get_trip_map_endpoint(trip_id: str, partition: str = "evaluator_test", use_hmm: bool = True):
     if active_model is None:
         load_default_model()
 
     result = evaluator.evaluate_trip(
         trip_id=trip_id,
         model=active_model,
-        partition="student_test",
+        partition=partition,
         use_hmm=use_hmm
     )
 

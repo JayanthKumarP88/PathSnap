@@ -83,20 +83,32 @@ except Exception:
     st.sidebar.warning("⚠️ Laptop 1 API not reachable. Ensure run_api.bat is running on Laptop 1.")
 
 # Fetch available evaluation trips
+partition_choice = st.sidebar.radio(
+    "Evaluation Partition",
+    ["Official Evaluator Test (10 Trips)", "Student Test (Development)"],
+    index=0
+)
+selected_partition = "evaluator_test" if "Evaluator" in partition_choice else "student_test"
+
 available_trips = []
 try:
-    trips_resp = requests.get(f"{api_host}/trips", timeout=2)
+    trips_resp = requests.get(f"{api_host}/trips?partition={selected_partition}", timeout=2)
     if trips_resp.status_code == 200:
         available_trips = trips_resp.json().get("available_trips", [])
 except Exception:
     pass
 
 if not available_trips:
-    # Fallback to standard 10 evaluation trips
-    available_trips = [
-        "00000000", "00000007", "00000009", "00000040", "00000052",
-        "00000056", "00000065", "00000076", "00000077", "00000091"
-    ]
+    if selected_partition == "evaluator_test":
+        available_trips = [
+            "00000015", "00000017", "00000023", "00000030", "00000049",
+            "00000059", "00000067", "00000073", "00000087", "00000094"
+        ]
+    else:
+        available_trips = [
+            "00000000", "00000007", "00000009", "00000040", "00000052",
+            "00000056", "00000065", "00000076", "00000077", "00000091"
+        ]
 
 # Trip Selector
 st.sidebar.markdown("---")
@@ -118,6 +130,7 @@ if evaluate_clicked:
         try:
             payload = {
                 "trip_id": selected_trip,
+                "partition": selected_partition,
                 "use_hmm": use_hmm,
                 "search_radius": float(search_radius)
             }
@@ -145,7 +158,7 @@ if evaluate_clicked:
                 # Fetch and render Folium Map from Laptop 1
                 st.markdown("---")
                 st.subheader(f"🗺️ Reconstructed Route Visualization (Trip {selected_trip})")
-                map_url = f"{api_host}/map/{selected_trip}?use_hmm={str(use_hmm).lower()}"
+                map_url = f"{api_host}/map/{selected_trip}?partition={selected_partition}&use_hmm={str(use_hmm).lower()}"
                 map_resp = requests.get(map_url, timeout=30)
                 if map_resp.status_code == 200:
                     components.html(map_resp.text, height=580, scrolling=False)
